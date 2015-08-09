@@ -1,0 +1,14 @@
+---
+docker_package:
+  name:  docker
+  state: installed
+
+docker_service:
+  name:    docker.service
+  state:   started
+  enabled: yes
+
+utils:
+  bridge_utils:
+    name: bridge-utils
+    state: installed

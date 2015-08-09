@@ -1,0 +1,61 @@
+- name: Gather OS Specific Variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "../vars/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+    - "../vars/{{ ansible_distribution }}.yml"
+    - "../vars/{{ ansible_os_family }}.yml"
+    - "../vars/defaults.yml"
+
+- name: Install docker repo key for Ubuntu
+  shell: "wget -qO- https://get.docker.com/gpg | apt-key add - >/tmp/docker_repo_key.out"
+  args:
+    creates: /tmp/docker_repo_key.out
+  when:  ansible_distribution == "Ubuntu"
+  sudo: true
+
+- name: Fetch docker repo file for Ubuntu
+  copy:
+    src:  "../files/ubuntu/docker.list"
+    dest: "/etc/apt/sources.list.d/docker.list"
+    owner: root
+    group: root
+    mode:  0644
+  when:  ansible_distribution == "Ubuntu"
+  sudo:  true
+
+- name: Update apt-cache
+  apt:
+    update_cache: yes
+  when:  ansible_distribution == "Ubuntu"
+  sudo:  true
+
+- name: Install docker, yeah?
+  action: >
+    {{ ansible_pkg_mgr }} name={{ docker_package.name }} state={{ docker_package.state }}
+  sudo: true
+
+- name: Start up docker, beauty!
+  service:
+    name:    "{{ docker_service.name }}"
+    enabled: "{{ docker_service.enabled }}"
+    state:   "{{ docker_service.state }}"
+  sudo: true
+
+- name: Install bridge utils
+  action: >
+    {{ ansible_pkg_mgr }} name={{ utils.bridge_utils.name }} state={{ utils.bridge_utils.state }}
+  sudo: true
+
+- name: Add vagrant to docker group
+  user:
+    name: vagrant
+    append: true
+    groups: docker
+  sudo: true
+
+- name: Bash completion for docker
+  copy:
+    src: "../files/etc/bash_completion.d/docker"
+    dest: "/etc/bash_completion.d"
+    mode: 0755
+  sudo: true

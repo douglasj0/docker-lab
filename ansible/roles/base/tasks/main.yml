@@ -1,0 +1,25 @@
+- name: Install "libselinux-python" so we can kill selinux
+  yum:
+    name: "libselinux-python"
+    state: present
+  when: ansible_distribution == "RedHat" or ansible_distribution == "CentOS"
+  sudo: true
+
+- name: Disable selinux
+  selinux:
+    state: disabled
+  when: ansible_distribution == "RedHat" or ansible_distribution == "CentOS"
+  sudo: true
+
+- name: Install vim
+  action: >
+    {{ ansible_pkg_mgr }} name="vim" state="present"
+  sudo: true
+
+- name: Additional bash completion
+  action: >
+    {{ ansible_pkg_mgr }} name="bash-completion" state="present"
+  sudo: true
+
+- include: devtools.yml
+- include: utilities.yml

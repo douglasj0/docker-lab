@@ -1,0 +1,9 @@
+- name: Install lynx
+  action: >
+    {{ ansible_pkg_mgr }} name="lynx" state="present"
+  sudo: true
+
+- name: Install links
+  action: >
+    {{ ansible_pkg_mgr }} name="links" state="present"
+  sudo: true
